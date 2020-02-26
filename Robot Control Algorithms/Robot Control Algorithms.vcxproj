@@ -151,7 +151,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ExtraMath.cpp" />
+    <ClCompile Include="InverseKinematicsSystem.cpp" />
     <ClCompile Include="Robot Control Algorithms.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="InverseKinematicsSystem.h" />
+    <ClInclude Include="ExtraMath.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

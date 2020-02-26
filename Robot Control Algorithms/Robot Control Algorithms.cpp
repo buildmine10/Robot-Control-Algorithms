@@ -2,11 +2,46 @@
 //
 
 #include <iostream>
+#include <fstream>
+#include <string>
+
+#include "InverseKinematicsSystem.h"
+
+void setTarget(double x, double y, double z);
+void print();
+
+InverseKinematicsSystem inverseKinematicsSystem({ 0, 0, 0 }, { 45, 45 }, 3, InverseKinematicsSystem::Segment(1.0), InverseKinematicsSystem::Segment(1.0), InverseKinematicsSystem::Segment(1.0));
+std::ofstream OFile{"InterfaceFile.txt"};
+std::ifstream IFile{ "InterfaceFile.txt" };
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	print();
+	while (true) {
+
+	}
 }
+
+void setTarget(double x, double y, double z) {
+	inverseKinematicsSystem.setTarget({ x, y, z });
+}
+
+void print() {
+	std::string output;
+	for (Coordinate point : inverseKinematicsSystem.points)
+	{
+		output.append(std::to_string(point.GetX()));
+		output.append(",");
+		output.append(std::to_string(point.GetY()));
+		output.append(",");
+		output.append(std::to_string(point.GetZ()));
+		output.append("\n");
+	}
+	
+	OFile << output;
+	OFile.close();
+}
+
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
 // Debug program: F5 or Debug > Start Debugging menu
