@@ -24,6 +24,7 @@ private:
 	std::array<double, 3> m_rootPosition;
 	std::array<double, 2> m_rootAngle;
 
+	void forwardKinematicUpdateAnglesOnly();
 	void forwardKinematicUpdate();
 	void updateLocalAngles();
 
@@ -39,8 +40,8 @@ public:
 		Segment(
 			double _length,
 
-			std::array<double, 2> _xAngleRange = { -180.0 * DEG_TO_RAD, 180.0 * DEG_TO_RAD },
-			std::array<double, 2> _yAngleRange = { -180.0 * DEG_TO_RAD, 180.0 * DEG_TO_RAD },
+			std::array<double, 2> _polarAngleRange = { -180.0 * DEG_TO_RAD, 180.0 * DEG_TO_RAD },
+			std::array<double, 2> _azimuthalAngleRange = { -180.0 * DEG_TO_RAD, 180.0 * DEG_TO_RAD },
 			std::array<double, 2> _angleOffset = { 0, 0 },
 
 			std::array<double, 2> _xLinearRange = { 0, 0 },
@@ -48,8 +49,8 @@ public:
 
 		):	length(_length),
 
-			xAngleRange(_xAngleRange),
-			yAngleRange(_yAngleRange),
+			polarAngleRange(_polarAngleRange),
+			azimuthalAngleRange(_azimuthalAngleRange),
 			angleOffset(_angleOffset),
 
 			xLinearRange(_xLinearRange),
@@ -62,15 +63,18 @@ public:
 		std::array<double, 2> getLinearMovement();
 		std::array<double, 2> getWorldAngle();
 
-		void inverseKinematicUpdate(Coordinate targetPosition);
-		void inverseKinematicUpdate(std::array<double, 3> targetPosition);
+		void inverseKinematicUpdateAnglesOnly(Coordinate targetPosition);
+		void inverseKinematicUpdateAnglesOnly(std::array<double, 3> targetPosition);
+
+		void inverseKinematicUpdateLinearOnly(Coordinate targetPosition);
+		void inverseKinematicUpdateLinearOnly(std::array<double, 3> targetPosition);
 		
 	private:
 		double length;//units: user defined
 
 		//z is not used because only two angle are need to represent direction in 3D space
-		std::array<double, 2> xAngleRange;//[0]: min, [1]: max
-		std::array<double, 2> yAngleRange;//units: radians
+		std::array<double, 2> polarAngleRange;//[0]: min, [1]: max
+		std::array<double, 2> azimuthalAngleRange;//units: radians
 
 		//z is not used because that would require physical separation
 		std::array<double, 2> xLinearRange;//[0]: min, [1]: max

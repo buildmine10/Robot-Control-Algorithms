@@ -17,8 +17,8 @@ void SphericalCoordinate::operator=(const CartesianCoordinate& cartesianCoordina
 	else
 	{
 		magnitude = sqrt(pow(cartesianCoordinate.x, 2) + pow(cartesianCoordinate.y, 2) + pow(cartesianCoordinate.z, 2));
-		polarAngle = atan2(cartesianCoordinate.y, cartesianCoordinate.x);
-		azimuthalAngle = atan2(sqrt(pow(cartesianCoordinate.x, 2) + pow(cartesianCoordinate.y, 2)), cartesianCoordinate.z);
+		polarAngle = atan2(sqrt(pow(cartesianCoordinate.x, 2) + pow(cartesianCoordinate.y, 2)), cartesianCoordinate.z);
+		azimuthalAngle = atan2(cartesianCoordinate.y, cartesianCoordinate.x);
 	}
 
 }
@@ -95,6 +95,16 @@ Coordinate::Coordinate(SphericalCoordinate coord)
 }
 
 
+SphericalCoordinate Coordinate::GetSpherical()
+{
+	return spherical;
+}
+
+CartesianCoordinate Coordinate::GetCartesian()
+{
+	return cartesian;
+}
+
 void Coordinate::operator=(const Coordinate& other)
 {
 	this->cartesian = other.cartesian;
@@ -140,4 +150,58 @@ Coordinate Coordinate::operator/(const double& number)
 Coordinate Coordinate::Normalize()
 {
 	return Coordinate(cartesian.Normalize());
+}
+
+Coordinate Coordinate::RotateX(double radians)
+{
+	Coordinate output;
+
+	output.SetX(cartesian.x);
+	output.SetY(cos(radians) * cartesian.y - sin(radians) * cartesian.z);
+	output.SetZ(sin(radians) * cartesian.y + cos(radians) * cartesian.z);
+
+	return output;
+}
+
+Coordinate Coordinate::RotateY(double radians)
+{
+	Coordinate output;
+
+	output.SetX(cos(radians) * cartesian.x + sin(radians) * cartesian.z);
+	output.SetY(cartesian.y);
+	output.SetZ(-sin(radians) * cartesian.x + cos(radians) * cartesian.z);
+
+	return output;
+}
+
+Coordinate Coordinate::RotateZ(double radians)
+{
+	Coordinate output;
+
+	output.SetX(cos(radians) * cartesian.x - sin(radians) * cartesian.y);
+	output.SetY(sin(radians) * cartesian.x + cos(radians) * cartesian.y);
+	output.SetZ(cartesian.z);
+
+	return output;
+}
+
+Coordinate Coordinate::RotateXZPlane(double radians)
+{
+	Coordinate output;
+
+	output.SetX(cos(radians) * cartesian.x - sin(radians) * cartesian.z);
+	output.SetY(cartesian.y);
+	output.SetZ(sin(radians) * cartesian.x + cos(radians) * cartesian.z);
+
+	return output;
+}
+
+Coordinate Coordinate::ToLocalCartesian(Coordinate other)
+{
+	return other - this->cartesian;
+}
+
+Coordinate Coordinate::ToLocalSpherical(Coordinate other)
+{
+	return other.RotateZ(-GetAzimuthalAngle()).RotateY(-GetPolarAngle());
 }

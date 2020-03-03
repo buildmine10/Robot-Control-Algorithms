@@ -35,26 +35,44 @@ InverseKinematicsSystem::InverseKinematicsSystem(std::array<double, 3> rootPosit
 
 	va_end(segments);
 
-	forwardKinematicUpdate();
+	forwardKinematicUpdateAnglesOnly();
 }
 
 void InverseKinematicsSystem::update()
 {
+	//update angles
 	for (int i = m_segments.size() - 1; i >= 0; i--) 
 	{	
 		if (i == m_segments.size() - 1) 
 		{
-			m_segments[i].inverseKinematicUpdate(m_targetPosition);
+			m_segments[i].inverseKinematicUpdateAnglesOnly(m_targetPosition);
 		}
 		else 
 		{
-			m_segments[i].inverseKinematicUpdate(m_segments[i + 1].startPosition);
+			m_segments[i].inverseKinematicUpdateAnglesOnly(m_segments[i + 1].startPosition);
+		}
+	}
+
+	forwardKinematicUpdateAnglesOnly();
+
+	//update linear movement
+
+	for (int i = m_segments.size() - 1; i >= 0; i--)
+	{
+		if (i == m_segments.size() - 1)
+		{
+			m_segments[i].inverseKinematicUpdateLinearOnly(m_targetPosition);
+			//m_segments[i].inverseKinematicUpdateLinearOnly(std::array<double, 3>{1, 0, 1}/*m_targetPosition*/);
+		}
+		else
+		{
+			m_segments[i].inverseKinematicUpdateLinearOnly(m_segments[i + 1].startPosition);
 		}
 	}
 
 	forwardKinematicUpdate();
 
-	std::cout << std::endl << "( " << m_segments[m_segments.size() - 1].endPosition.GetX() << ", " << m_segments[m_segments.size() - 1].endPosition.GetY() << ", " << m_segments[m_segments.size() - 1].endPosition.GetZ() << " )" << std::endl;
+	std::cout << std::endl << "End position ( " << m_segments[m_segments.size() - 1].endPosition.GetX() << ", " << m_segments[m_segments.size() - 1].endPosition.GetY() << ", " << m_segments[m_segments.size() - 1].endPosition.GetZ() << " )" << std::endl;
 
 	std::cout << std::endl;
 }
@@ -64,12 +82,12 @@ void InverseKinematicsSystem::setTarget(std::array<double, 3> target)
 	m_targetPosition = target;
 }
 
-void InverseKinematicsSystem::forwardKinematicUpdate()
+void InverseKinematicsSystem::forwardKinematicUpdateAnglesOnly()
 {
 	for (int i = 0; i < m_segments.size(); ++i)
 	{
 		//std::cout << "segment arm( " << m_segments[i].segmentArm.GetX() << ", " << m_segments[i].segmentArm.GetY() << ", " << m_segments[i].segmentArm.GetZ() << " )" << std::endl;
-		std::cout << i << " ( " << m_segments[i].endPosition.GetX() << ", " << m_segments[i].endPosition.GetY() << ", " << m_segments[i].endPosition.GetZ() << " )" << std::endl;
+		//std::cout << i << " ( " << m_segments[i].endPosition.GetX() << ", " << m_segments[i].endPosition.GetY() << ", " << m_segments[i].endPosition.GetZ() << " )" << std::endl;
 
 		if (i > 0)
 		{
@@ -86,7 +104,40 @@ void InverseKinematicsSystem::forwardKinematicUpdate()
 		//std::cout << i << " ( " << m_segments[i].endPosition.GetX() << ", " << m_segments[i].endPosition.GetY() << ", " << m_segments[i].endPosition.GetZ() << " )" << std::endl << std::endl;
 	}
 	
-	std::cout << "( " << m_segments[m_segments.size() - 1].endPosition.GetX() << ", " << m_segments[m_segments.size() - 1].endPosition.GetY() << ", " << m_segments[m_segments.size() - 1].endPosition.GetZ() << " )" << std::endl << std::endl;
+	//std::cout << "( " << m_segments[m_segments.size() - 1].endPosition.GetX() << ", " << m_segments[m_segments.size() - 1].endPosition.GetY() << ", " << m_segments[m_segments.size() - 1].endPosition.GetZ() << " )" << std::endl << std::endl;
+}
+
+void InverseKinematicsSystem::forwardKinematicUpdate()
+{
+	forwardKinematicUpdateAnglesOnly();
+
+	for (int i = 0; i < m_segments.size(); ++i)
+	{
+		//std::cout << "segment arm( " << m_segments[i].segmentArm.GetX() << ", " << m_segments[i].segmentArm.GetY() << ", " << m_segments[i].segmentArm.GetZ() << " )" << std::endl;
+		//std::cout << i << " ( " << m_segments[i].endPosition.GetX() << ", " << m_segments[i].endPosition.GetY() << ", " << m_segments[i].endPosition.GetZ() << " )" << std::endl;
+
+		if (i > 0)
+		{
+			//std::cout << i << " Parent ( " << m_segments[i - 1].endPosition.GetX() << ", " << m_segments[i - 1].endPosition.GetY() << ", " << m_segments[i - 1].endPosition.GetZ() << " )" << std::endl;
+			m_segments[i].startPosition = m_segments[i - 1].endPosition;
+
+			Coordinate temp{ m_segments[i].linearMovement[0],  m_segments[i].linearMovement[1], 0 };
+			Coordinate temp2 = temp.RotateY(m_segments[i].segmentArm.GetPolarAngle()).RotateZ(m_segments[i].segmentArm.GetAzimuthalAngle());
+
+			m_segments[i].endPosition = m_segments[i].startPosition + m_segments[i].segmentArm + temp2;
+		}
+		else
+		{
+			m_segments[i].startPosition = m_rootPosition;
+
+			Coordinate temp{ m_segments[i].linearMovement[0],  m_segments[i].linearMovement[1], 0 };
+			Coordinate temp2 = temp.RotateY(m_segments[i].segmentArm.GetPolarAngle()).RotateZ(m_segments[i].segmentArm.GetAzimuthalAngle());
+
+			m_segments[i].endPosition = m_segments[i].startPosition + m_segments[i].segmentArm + temp2;
+		}
+
+		//std::cout << i << " ( " << m_segments[i].endPosition.GetX() << ", " << m_segments[i].endPosition.GetY() << ", " << m_segments[i].endPosition.GetZ() << " )" << std::endl << std::endl;
+	}
 }
 
 
@@ -110,7 +161,7 @@ std::array<double, 2> InverseKinematicsSystem::Segment::getLinearMovement()
 	return linearMovement;
 }
 
-void InverseKinematicsSystem::Segment::inverseKinematicUpdate(Coordinate targetPosition)
+void InverseKinematicsSystem::Segment::inverseKinematicUpdateAnglesOnly(Coordinate targetPosition)
 {
 	//world space is relative to the world
 	//local space is relative to the segment (the origin is centered on the start point, the positive z direction is in the direction of the parent segement's world angle plus the segment's angle offset)
@@ -122,14 +173,59 @@ void InverseKinematicsSystem::Segment::inverseKinematicUpdate(Coordinate targetP
 		segmentArm.SetX(1);
 	segmentArm = segmentArm * length;
 
+
+	double a = segmentArm.GetAzimuthalAngle();
+
+	//min clamp
+	if (a < azimuthalAngleRange[0])
+		a = azimuthalAngleRange[0];
+
+	//max clamp
+	if (a > azimuthalAngleRange[1])
+		a = azimuthalAngleRange[1];
+
+
+	double p = segmentArm.GetPolarAngle();
+
+	//min clamp
+	if (p < polarAngleRange[0])
+		p = polarAngleRange[0];
+
+	//max clamp
+	if (p > polarAngleRange[1])
+		p = polarAngleRange[1];
+
+
+	segmentArm.SetAzimuthalAngle(a);
+	segmentArm.SetPolarAngle(p);
+
+
 	startPosition = endPosition - segmentArm;
 
 	//std::cout << "target position ( " << targetPosition.GetX() << ", " << targetPosition.GetY() << ", " << targetPosition.GetZ() << " )" << std::endl;
 	//std::cout << "segment arm ( " << segmentArm.GetX() << ", " << segmentArm.GetY() << ", " << segmentArm.GetZ() << " )" << std::endl;
 }
 
-void InverseKinematicsSystem::Segment::inverseKinematicUpdate(std::array<double, 3> targetPosition)
+void InverseKinematicsSystem::Segment::inverseKinematicUpdateAnglesOnly(std::array<double, 3> targetPosition)
 {
-	inverseKinematicUpdate(Coordinate(targetPosition));
+	inverseKinematicUpdateAnglesOnly(Coordinate(targetPosition));
+}
+
+void InverseKinematicsSystem::Segment::inverseKinematicUpdateLinearOnly(Coordinate targetPosition)
+{
+	Coordinate localTarget = startPosition.ToLocalCartesian(targetPosition) - startPosition.ToLocalCartesian(endPosition);
+
+	localTarget = segmentArm.ToLocalSpherical(localTarget);
+
+	linearMovement[0] = localTarget.GetX();
+	linearMovement[1] = localTarget.GetY();
+
+	linearMovement[0] = clamp(linearMovement[0], xLinearRange[0], xLinearRange[1]);
+	linearMovement[1] = clamp(linearMovement[1], yLinearRange[0], yLinearRange[1]);
+}
+
+void InverseKinematicsSystem::Segment::inverseKinematicUpdateLinearOnly(std::array<double, 3> targetPosition)
+{
+	inverseKinematicUpdateLinearOnly(Coordinate(targetPosition));
 }
 

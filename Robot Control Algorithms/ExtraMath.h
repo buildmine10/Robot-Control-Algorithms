@@ -119,13 +119,16 @@ public:
 	double GetY() { return cartesian.y; };
 	double GetZ() { return cartesian.z; };
 
-	void SetMagnitude(double _magnitude) { spherical.magnitude = _magnitude; cartesian = spherical; };
-	void SetPolarAngle(double _polarAngle) { spherical.polarAngle = _polarAngle; cartesian = spherical; };
-	void SetAzimuthalAngle(double _azimuthalAngle) { spherical.azimuthalAngle = _azimuthalAngle; cartesian = spherical; };
+	void SetMagnitude		(double _magnitude)			{ spherical.magnitude		= _magnitude;		cartesian = spherical; };
+	void SetPolarAngle		(double _polarAngle)		{ spherical.polarAngle		= _polarAngle;		cartesian = spherical; };
+	void SetAzimuthalAngle	(double _azimuthalAngle)	{ spherical.azimuthalAngle	= _azimuthalAngle;	cartesian = spherical; };
 
 	double GetMagnitude() { return spherical.magnitude; };
 	double GetPolarAngle() { return spherical.polarAngle; };
 	double GetAzimuthalAngle() { return spherical.azimuthalAngle; };
+
+	SphericalCoordinate GetSpherical();
+	CartesianCoordinate GetCartesian();
 
 
 	void operator=(const Coordinate&);
@@ -142,7 +145,13 @@ public:
 
 	Coordinate Normalize();
 
-	Coordinate RotateX();
+	Coordinate RotateX(double radians);
+	Coordinate RotateY(double radians);
+	Coordinate RotateZ(double radians);
+	Coordinate RotateXZPlane(double radians);
+
+	Coordinate ToLocalCartesian(Coordinate);
+	Coordinate ToLocalSpherical(Coordinate);
 };
 
 

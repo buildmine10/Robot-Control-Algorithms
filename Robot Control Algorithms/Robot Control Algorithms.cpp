@@ -1,22 +1,29 @@
 // Robot Control Algorithms.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+//make an output file
+//test in unity
+
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "ExtraMath.h"
 
 #include "InverseKinematicsSystem.h"
 
 void setTarget(double x, double y, double z);
 void print();
 
-InverseKinematicsSystem inverseKinematicsSystem({ 0, 0, 0 }, { 45, 45 }, 3, InverseKinematicsSystem::Segment(1.0), InverseKinematicsSystem::Segment(1.0), InverseKinematicsSystem::Segment(1.0));
+InverseKinematicsSystem inverseKinematicsSystem({ 0, 0, 0 }, { 0, 0 }, 1, InverseKinematicsSystem::Segment(1.0, { -45 * DEG_TO_RAD, 45 * DEG_TO_RAD }, { -45 * DEG_TO_RAD, 45 * DEG_TO_RAD }));// , InverseKinematicsSystem::Segment(1.0), InverseKinematicsSystem::Segment(1.0));
 std::ofstream OFile{"InterfaceFile.txt"};
 std::ifstream IFile{ "InterfaceFile.txt" };
 
 int main()
 {
 	print();
+	setTarget(1, 1, 1);
+	inverseKinematicsSystem.update();
+	inverseKinematicsSystem.update();
 	while (true) {
 
 	}
